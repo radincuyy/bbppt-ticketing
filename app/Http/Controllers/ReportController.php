@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
-use App\Models\Category;
+use App\Models\Tiket;
+use App\Models\Kategori;
 use App\Models\Status;
-use App\Models\Priority;
-use App\Models\User;
+use App\Models\Prioritas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -14,71 +13,71 @@ use Carbon\Carbon;
 class ReportController extends Controller
 {
     /**
-     * Display report page with filters
+     * Menampilkan halaman laporan dengan filter.
      */
     public function index(Request $request)
     {
         $user = Auth::user();
 
-        // Only Manager and TeamLead can access reports
+        // Hanya Manager dan TeamLead yang bisa akses laporan
         if (!$user->hasAnyRole(['ManagerTI', 'TeamLead'])) {
             abort(403);
         }
 
-        // Get filter parameters
+        // Ambil parameter filter
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
-        $categoryId = $request->get('category_id');
-        $statusId = $request->get('status_id');
-        $priorityId = $request->get('priority_id');
+        $kategoriId = $request->get('id_kategori');
+        $statusId = $request->get('id_status');
+        $prioritasId = $request->get('id_prioritas');
 
-        // Build query
-        $query = Ticket::with(['category', 'priority', 'status', 'requester', 'assignedTo'])
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        // Buat query
+        $query = Tiket::with(['kategori', 'prioritas', 'status', 'pengguna', 'teknisi'])
+            ->whereBetween('tanggal_dibuat', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
+        if ($kategoriId) {
+            $query->where('id_kategori', $kategoriId);
         }
         if ($statusId) {
-            $query->where('status_id', $statusId);
+            $query->where('id_status', $statusId);
         }
-        if ($priorityId) {
-            $query->where('priority_id', $priorityId);
+        if ($prioritasId) {
+            $query->where('id_prioritas', $prioritasId);
         }
 
-        $tickets = $query->orderBy('created_at', 'desc')->get();
+        $tikets = $query->orderBy('tanggal_dibuat', 'desc')->get();
 
-        // Statistics
+        // Statistik Laporan
         $stats = [
-            'total' => $tickets->count(),
-            'open' => $tickets->where('status.is_closed', false)->count(),
-            'closed' => $tickets->where('status.is_closed', true)->count(),
-            'by_category' => $tickets->groupBy('category.name')->map->count(),
-            'by_priority' => $tickets->groupBy('priority.name')->map->count(),
-            'by_status' => $tickets->groupBy('status.name')->map->count(),
+            'total' => $tikets->count(),
+            'open' => $tikets->filter(fn($t) => $t->status->nama_status !== 'Closed')->count(),
+            'closed' => $tikets->filter(fn($t) => $t->status->nama_status === 'Closed')->count(),
+            'by_category' => $tikets->groupBy('kategori.nama_kategori')->map->count(),
+            'by_priority' => $tikets->groupBy('prioritas.nama_prioritas')->map->count(),
+            'by_status' => $tikets->groupBy('status.nama_status')->map->count(),
         ];
 
-        // Get filter options
-        $categories = Category::where('is_active', true)->get();
-        $statuses = Status::ordered()->get();
-        $priorities = Priority::orderBy('level')->get();
+        // Opsi filter
+        $kategoris = Kategori::all();
+        $statuses = Status::all();
+        $prioritass = Prioritas::all();
 
         return view('reports.index', compact(
-            'tickets', 
+            'tikets', 
             'stats', 
-            'categories', 
+            'kategoris', 
             'statuses', 
-            'priorities',
+            'prioritass',
             'startDate',
             'endDate',
-            'categoryId',
+            'kategoriId',
             'statusId',
-            'priorityId'
+            'prioritasId'
         ));
     }
 
     /**
-     * Export to Excel (CSV)
+     * Ekspor Laporan ke Excel (CSV).
      */
     public function exportExcel(Request $request)
     {
@@ -91,20 +90,20 @@ class ReportController extends Controller
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
 
-        $query = Ticket::with(['category', 'priority', 'status', 'requester', 'assignedTo'])
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $query = Tiket::with(['kategori', 'prioritas', 'status', 'pengguna', 'teknisi'])
+            ->whereBetween('tanggal_dibuat', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
-        if ($request->get('category_id')) {
-            $query->where('category_id', $request->get('category_id'));
+        if ($request->get('id_kategori')) {
+            $query->where('id_kategori', $request->get('id_kategori'));
         }
-        if ($request->get('status_id')) {
-            $query->where('status_id', $request->get('status_id'));
+        if ($request->get('id_status')) {
+            $query->where('id_status', $request->get('id_status'));
         }
-        if ($request->get('priority_id')) {
-            $query->where('priority_id', $request->get('priority_id'));
+        if ($request->get('id_prioritas')) {
+            $query->where('id_prioritas', $request->get('id_prioritas'));
         }
 
-        $tickets = $query->orderBy('created_at', 'desc')->get();
+        $tikets = $query->orderBy('tanggal_dibuat', 'desc')->get();
 
         $filename = 'laporan_tiket_' . $startDate . '_' . $endDate . '.csv';
 
@@ -113,13 +112,13 @@ class ReportController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
-        $callback = function() use ($tickets) {
+        $callback = function() use ($tikets) {
             $file = fopen('php://output', 'w');
             
-            // Add BOM for Excel UTF-8 compatibility
+            // Tambahkan BOM untuk kompatibilitas Excel UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
-            // Header row
+            // Baris Header
             fputcsv($file, [
                 'No. Tiket',
                 'Judul',
@@ -129,21 +128,19 @@ class ReportController extends Controller
                 'Pemohon',
                 'Ditugaskan Ke',
                 'Tanggal Dibuat',
-                'Tanggal Selesai',
             ]);
 
-            // Data rows
-            foreach ($tickets as $ticket) {
+            // Baris Data
+            foreach ($tikets as $tiket) {
                 fputcsv($file, [
-                    $ticket->ticket_number,
-                    $ticket->title,
-                    $ticket->category->name ?? '-',
-                    $ticket->priority->name ?? '-',
-                    $ticket->status->name ?? '-',
-                    $ticket->requester->name ?? '-',
-                    $ticket->assignedTo->name ?? 'Belum ditugaskan',
-                    $ticket->created_at->format('d/m/Y H:i'),
-                    $ticket->resolved_at ? $ticket->resolved_at->format('d/m/Y H:i') : '-',
+                    $tiket->nomor_tiket,
+                    $tiket->judul,
+                    $tiket->kategori->nama_kategori ?? '-',
+                    $tiket->prioritas->nama_prioritas ?? '-',
+                    $tiket->status->nama_status ?? '-',
+                    $tiket->pengguna->name ?? '-',
+                    $tiket->teknisi->name ?? 'Belum ditugaskan',
+                    $tiket->tanggal_dibuat->format('d/m/Y H:i'),
                 ]);
             }
 
@@ -154,7 +151,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Export to PDF
+     * Ekspor Laporan ke PDF.
      */
     public function exportPdf(Request $request)
     {
@@ -167,30 +164,30 @@ class ReportController extends Controller
         $startDate = $request->get('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->get('end_date', Carbon::now()->format('Y-m-d'));
 
-        $query = Ticket::with(['category', 'priority', 'status', 'requester', 'assignedTo'])
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $query = Tiket::with(['kategori', 'prioritas', 'status', 'pengguna', 'teknisi'])
+            ->whereBetween('tanggal_dibuat', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
 
-        if ($request->get('category_id')) {
-            $query->where('category_id', $request->get('category_id'));
+        if ($request->get('id_kategori')) {
+            $query->where('id_kategori', $request->get('id_kategori'));
         }
-        if ($request->get('status_id')) {
-            $query->where('status_id', $request->get('status_id'));
+        if ($request->get('id_status')) {
+            $query->where('id_status', $request->get('id_status'));
         }
-        if ($request->get('priority_id')) {
-            $query->where('priority_id', $request->get('priority_id'));
+        if ($request->get('id_prioritas')) {
+            $query->where('id_prioritas', $request->get('id_prioritas'));
         }
 
-        $tickets = $query->orderBy('created_at', 'desc')->get();
+        $tikets = $query->orderBy('tanggal_dibuat', 'desc')->get();
 
-        // Statistics
+        // Statistik
         $stats = [
-            'total' => $tickets->count(),
-            'open' => $tickets->where('status.is_closed', false)->count(),
-            'closed' => $tickets->where('status.is_closed', true)->count(),
-            'by_category' => $tickets->groupBy('category.name')->map->count(),
-            'by_status' => $tickets->groupBy('status.name')->map->count(),
+            'total' => $tikets->count(),
+            'open' => $tikets->filter(fn($t) => $t->status->nama_status !== 'Closed')->count(),
+            'closed' => $tikets->filter(fn($t) => $t->status->nama_status === 'Closed')->count(),
+            'by_category' => $tikets->groupBy('kategori.nama_kategori')->map->count(),
+            'by_status' => $tikets->groupBy('status.nama_status')->map->count(),
         ];
 
-        return view('reports.pdf', compact('tickets', 'stats', 'startDate', 'endDate'));
+        return view('reports.pdf', compact('tikets', 'stats', 'startDate', 'endDate'));
     }
 }

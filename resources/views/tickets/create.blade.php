@@ -12,88 +12,88 @@
         <!-- Main Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
             <div class="space-y-6">
-                <!-- Title -->
+                <!-- Judul Tiket -->
                 <div>
-                    <label for="title" class="block text-sm font-medium text-slate-700 mb-2">
-                        Perihal Tiket <span class="text-red-500">*</span>
+                    <label for="judul" class="block text-sm font-medium text-slate-700 mb-2">
+                        Judul Tiket <span class="text-red-500">*</span>
                     </label>
                     <input type="text" 
-                           name="title" 
-                           id="title" 
-                           value="{{ old('title') }}"
-                           class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('title') border-red-500 @enderror"
+                           name="judul" 
+                           id="judul" 
+                           value="{{ old('judul') }}"
+                           class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('judul') border-red-500 @enderror"
                            placeholder="Ringkasan singkat masalah atau permintaan Anda"
                            required>
-                    @error('title')
+                    @error('judul')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Category & Priority -->
+                <!-- Kategori & Prioritas -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Category -->
+                    <!-- Kategori -->
                     <div>
-                        <label for="category_id" class="block text-sm font-medium text-slate-700 mb-2">
+                        <label for="id_kategori" class="block text-sm font-medium text-slate-700 mb-2">
                             Kategori <span class="text-red-500">*</span>
                         </label>
-                        <select name="category_id" 
-                                id="category_id" 
-                                class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('category_id') border-red-500 @enderror"
+                        <select name="id_kategori" 
+                                id="id_kategori" 
+                                class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('id_kategori') border-red-500 @enderror"
                                 required>
                             <option value="">Pilih Kategori</option>
-                            @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
+                            @foreach($kategoris as $kategori)
+                            <option value="{{ $kategori->id_kategori }}" {{ old('id_kategori') == $kategori->id_kategori ? 'selected' : '' }}>
+                                {{ $kategori->nama_kategori }}
                             </option>
                             @endforeach
                         </select>
-                        @error('category_id')
+                        @error('id_kategori')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <!-- Priority -->
+                    <!-- Prioritas -->
                     <div>
-                        <label for="priority_id" class="block text-sm font-medium text-slate-700 mb-2">
+                        <label for="id_prioritas" class="block text-sm font-medium text-slate-700 mb-2">
                             Prioritas <span class="text-red-500">*</span>
                         </label>
-                        <select name="priority_id" 
-                                id="priority_id" 
-                                class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:border-blue-500 transition @error('priority_id') border-red-500 @enderror"
+                        <select name="id_prioritas" 
+                                id="id_prioritas" 
+                                class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:border-blue-500 transition @error('id_prioritas') border-red-500 @enderror"
                                 required>
                             <option value="">Pilih Prioritas</option>
-                            @foreach($priorities as $priority)
-                            <option value="{{ $priority->id }}" {{ old('priority_id') == $priority->id ? 'selected' : '' }}>
-                                {{ $priority->name }}
+                            @foreach($prioritass as $prioritas)
+                            <option value="{{ $prioritas->id_prioritas }}" {{ old('id_prioritas') == $prioritas->id_prioritas ? 'selected' : '' }}>
+                                {{ $prioritas->nama_prioritas }}
                             </option>
                             @endforeach
                         </select>
-                        @error('priority_id')
+                        @error('id_prioritas')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Description -->
+                <!-- Deskripsi -->
                 <div>
-                    <label for="description" class="block text-sm font-medium text-slate-700 mb-2">
+                    <label for="deskripsi" class="block text-sm font-medium text-slate-700 mb-2">
                         Deskripsi <span class="text-red-500">*</span>
                     </label>
-                    <textarea name="description" 
-                              id="description" 
+                    <textarea name="deskripsi" 
+                              id="deskripsi" 
                               rows="6"
-                              class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('description') border-red-500 @enderror"
+                              class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition @error('deskripsi') border-red-500 @enderror"
                               placeholder="Jelaskan secara detail masalah atau permintaan Anda. Sertakan informasi seperti:
 - Langkah-langkah untuk mereproduksi masalah
 - Pesan error yang muncul (jika ada)
 - Perangkat atau software yang bermasalah"
-                              required>{{ old('description') }}</textarea>
-                    @error('description')
+                              required>{{ old('deskripsi') }}</textarea>
+                    @error('deskripsi')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Attachments -->
+                <!-- Lampiran File -->
                 <div x-data="fileUpload()">
                     <label class="block text-sm font-medium text-slate-700 mb-2">
                         Lampiran (Opsional)
@@ -113,12 +113,12 @@
                         <p class="text-xs text-slate-400 mt-2">Maksimal 10MB per file. Format: JPG, PNG, PDF, DOC, XLS</p>
                     </div>
                     
-                    <!-- File Preview List -->
+                    <!-- Preview Daftar File -->
                     <div x-show="files.length > 0" class="mt-4 space-y-2">
                         <p class="text-sm font-medium text-slate-700">File yang dipilih:</p>
                         <template x-for="(file, index) in files" :key="index">
                             <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                                <!-- Icon based on file type -->
+                                <!-- Ikon berdasarkan tipe file -->
                                 <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                                      :class="getFileIconClass(file.type)">
                                     <template x-if="file.type.startsWith('image/')">
@@ -129,13 +129,13 @@
                                     </template>
                                 </div>
                                 
-                                <!-- File info -->
+                                <!-- Info File -->
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-slate-700 truncate" x-text="file.name"></p>
                                     <p class="text-xs text-slate-500" x-text="formatFileSize(file.size)"></p>
                                 </div>
                                 
-                                <!-- Remove button -->
+                                <!-- Tombol Hapus -->
                                 <button type="button" @click="removeFile(index)" class="p-1 text-slate-400 hover:text-red-500 transition">
                                     <i class="ti ti-x text-xl"></i>
                                 </button>
@@ -150,7 +150,7 @@
             </div>
         </div>
 
-        <!-- Submit Buttons -->
+        <!-- Tombol Submit -->
         <div class="flex items-center justify-between">
             <a href="{{ route('tickets.index') }}" class="px-6 py-3 text-slate-600 font-medium hover:text-slate-800 transition inline-flex items-center gap-2">
                 <i class="ti ti-arrow-left"></i>
@@ -192,7 +192,7 @@ function fileUpload() {
                     file: file
                 };
                 
-                // Create preview for images
+                // Buat preview untuk gambar
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -207,7 +207,7 @@ function fileUpload() {
         
         removeFile(index) {
             this.files.splice(index, 1);
-            // Update the file input
+            // Update input file
             this.updateFileInput();
         },
         

@@ -11,32 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tickets', function (Blueprint $table) {
-            $table->id();
-            $table->string('ticket_number')->unique();
-            $table->string('title');
-            $table->text('description');
+        Schema::create('tiket', function (Blueprint $table) {
+            $table->id('id_tiket');
+            $table->unsignedBigInteger('id_pengguna'); // Requester
+            $table->unsignedBigInteger('id_teknisi')->nullable(); // Assigned technician
+            $table->unsignedBigInteger('id_status');
+            $table->unsignedBigInteger('id_kategori');
+            $table->unsignedBigInteger('id_prioritas');
+            $table->string('nomor_tiket')->unique();
+            $table->string('judul');
+            $table->text('deskripsi');
+            $table->timestamp('tanggal_dibuat')->useCurrent();
+            $table->timestamp('tanggal_diperbarui')->useCurrent()->useCurrentOnUpdate();
             
             // Foreign Keys
-            $table->foreignId('category_id')->constrained()->onDelete('restrict');
-            $table->foreignId('priority_id')->constrained()->onDelete('restrict');
-            $table->foreignId('status_id')->constrained()->onDelete('restrict');
-            $table->foreignId('requester_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('assigned_to_id')->nullable()->constrained('users')->onDelete('set null');
-            
-            // Approval Workflow
-            $table->boolean('needs_approval')->default(false);
-            $table->enum('approval_status', ['pending', 'approved', 'rejected'])->nullable();
-            $table->foreignId('approved_by_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->timestamp('approved_at')->nullable();
-            $table->text('approval_notes')->nullable();
-            
-            // Resolution
-            $table->timestamp('resolved_at')->nullable();
-            $table->timestamp('closed_at')->nullable();
-            $table->text('resolution_notes')->nullable();
-            
-            $table->timestamps();
+            $table->foreign('id_pengguna')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('id_teknisi')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('id_status')->references('id_status')->on('status')->onDelete('restrict');
+            $table->foreign('id_kategori')->references('id_kategori')->on('kategori')->onDelete('restrict');
+            $table->foreign('id_prioritas')->references('id_prioritas')->on('prioritas')->onDelete('restrict');
         });
     }
 
@@ -45,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tickets');
+        Schema::dropIfExists('tiket');
     }
 };

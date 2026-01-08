@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('statuses', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('color')->default('#6b7280'); // gray-500
-            $table->integer('order')->default(0);
-            $table->boolean('is_default')->default(false);
-            $table->boolean('is_closed')->default(false); // For closed/resolved states
+        Schema::create('status', function (Blueprint $table) {
+            $table->id('id_status');
+            $table->string('nama_status');
+            $table->string('color')->default('#6B7280'); // Warna default abu-abu
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('statuses');
+        Schema::dropIfExists('status');
     }
 };

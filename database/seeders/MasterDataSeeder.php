@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Category;
-use App\Models\Priority;
+use App\Models\Kategori;
+use App\Models\Prioritas;
 use App\Models\Status;
 
 class MasterDataSeeder extends Seeder
@@ -14,48 +14,48 @@ class MasterDataSeeder extends Seeder
      */
     public function run(): void
     {
-        // Categories
-        $categories = [
-            ['name' => 'Technical Support', 'slug' => 'technical-support', 'description' => 'Masalah teknis pada perangkat atau software'],
-            ['name' => 'Account & Access', 'slug' => 'account-access', 'description' => 'Permintaan akses atau masalah akun'],
-            ['name' => 'Website', 'slug' => 'website', 'description' => 'Masalah atau permintaan website'],
-            ['name' => 'Jaringan', 'slug' => 'jaringan', 'description' => 'Masalah koneksi jaringan atau internet'],
-            ['name' => 'Hardware', 'slug' => 'hardware', 'description' => 'Masalah atau permintaan perangkat keras'],
-            ['name' => 'Software', 'slug' => 'software', 'description' => 'Instalasi atau masalah aplikasi'],
-            ['name' => 'IOT', 'slug' => 'iot', 'description' => 'Masalah atau permintaan perangkat IoT'],
-            ['name' => 'Permintaan Kebutuhan', 'slug' => 'permintaan-kebutuhan', 'description' => 'Permintaan kebutuhan'],
-            ['name' => 'Maintenance', 'slug' => 'maintenance', 'description' => 'Maintenance'],
-            ['name' => 'Lainnya', 'slug' => 'lainnya', 'description' => 'Kategori lainnya'],
+        // Data Kategori
+        $kategoris = [
+            ['nama_kategori' => 'Technical Support'],
+            ['nama_kategori' => 'Account & Access'],
+            ['nama_kategori' => 'Website'],
+            ['nama_kategori' => 'Jaringan'],
+            ['nama_kategori' => 'Hardware'],
+            ['nama_kategori' => 'Software'],
+            ['nama_kategori' => 'IOT'],
+            ['nama_kategori' => 'Permintaan Kebutuhan'],
+            ['nama_kategori' => 'Maintenance'],
+            ['nama_kategori' => 'Lainnya'],
         ];
 
-        foreach ($categories as $category) {
-            Category::create($category);
+        foreach ($kategoris as $kategori) {
+            Kategori::create($kategori);
         }
 
-        // Priorities
-        $priorities = [
-            ['name' => 'Low', 'slug' => 'low', 'color' => '#22c55e', 'level' => 1],
-            ['name' => 'Medium', 'slug' => 'medium', 'color' => '#3b82f6', 'level' => 2],
-            ['name' => 'High', 'slug' => 'high', 'color' => '#f97316', 'level' => 3],
+        // Data Prioritas dengan kode warna
+        $prioritass = [
+            ['nama_prioritas' => 'Low', 'color' => '#10B981'],
+            ['nama_prioritas' => 'Medium', 'color' => '#F59E0B'],
+            ['nama_prioritas' => 'High', 'color' => '#EF4444'],
         ];
 
-        foreach ($priorities as $priority) {
-            Priority::create($priority);
+        foreach ($prioritass as $prioritas) {
+            Prioritas::create($prioritas);
         }
 
-        // Statuses
+        // Data Status dengan kode warna
         $statuses = [
-            ['name' => 'Baru', 'slug' => 'baru', 'color' => '#3b82f6', 'order' => 1, 'is_default' => true, 'is_closed' => false],
-            ['name' => 'In Progress', 'slug' => 'in-progress', 'color' => '#f59e0b', 'order' => 2, 'is_default' => false, 'is_closed' => false],
-            ['name' => 'Menunggu Persetujuan', 'slug' => 'menunggu-persetujuan', 'color' => '#a855f7', 'order' => 3, 'is_default' => false, 'is_closed' => false],
-            ['name' => 'Selesai', 'slug' => 'selesai', 'color' => '#10b981', 'order' => 4, 'is_default' => false, 'is_closed' => false],
-            ['name' => 'Closed', 'slug' => 'closed', 'color' => '#6b7280', 'order' => 5, 'is_default' => false, 'is_closed' => true],
+            ['nama_status' => 'Baru', 'color' => '#3B82F6'],
+            ['nama_status' => 'Dalam Proses', 'color' => '#F59E0B'],
+            ['nama_status' => 'Menunggu Persetujuan', 'color' => '#8B5CF6'],
+            ['nama_status' => 'Selesai', 'color' => '#10B981'],
+            ['nama_status' => 'Closed', 'color' => '#6B7280'],
         ];
 
         foreach ($statuses as $status) {
             Status::create($status);
         }
 
-        $this->command->info('Master data seeded successfully!');
+        $this->command->info('Data master berhasil di-seed!');
     }
 }

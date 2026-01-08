@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('jabatan')->nullable()->after('email');
-            $table->string('phone')->nullable()->after('jabatan');
-            $table->timestamp('last_login_at')->nullable();
-            $table->timestamp('last_logout_at')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->timestamp('login')->nullable()->after('remember_token');
+            $table->timestamp('logout')->nullable()->after('login');
         });
     }
 
@@ -26,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['jabatan', 'phone', 'last_login_at', 'last_logout_at', 'is_active']);
+            $table->dropColumn(['jabatan', 'login', 'logout']);
         });
     }
 };

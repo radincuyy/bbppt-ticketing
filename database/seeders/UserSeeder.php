@@ -13,76 +13,69 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Manager TI
+        // Manager TI
         $manager = User::create([
             'name' => 'Manager TI',
             'email' => 'manager@bbppt.go.id',
             'password' => Hash::make('password'),
             'jabatan' => 'Manager Layanan TI',
-            'is_active' => true,
         ]);
         $manager->assignRole('ManagerTI');
 
-        // Create Team Lead
+        // Team Lead
         $teamLead = User::create([
             'name' => 'Ketua Tim TI',
             'email' => 'teamlead@bbppt.go.id',
             'password' => Hash::make('password'),
-            'jabatan' => 'Ketua Tim TI',
-            'is_active' => true,
+            'jabatan' => 'Ketua Tim',
         ]);
         $teamLead->assignRole('TeamLead');
 
-        // Create Helpdesk
+        // Helpdesk Staff
         $helpdesk = User::create([
             'name' => 'Staff Helpdesk',
             'email' => 'helpdesk@bbppt.go.id',
             'password' => Hash::make('password'),
             'jabatan' => 'Staff Helpdesk',
-            'is_active' => true,
         ]);
         $helpdesk->assignRole('Helpdesk');
 
-        // Create Technicians
-        $tech1 = User::create([
-            'name' => 'Staff Teknisi 1',
+        // Technicians
+        $teknisi1 = User::create([
+            'name' => 'Teknisi 1',
             'email' => 'teknisi1@bbppt.go.id',
             'password' => Hash::make('password'),
             'jabatan' => 'Staff Teknisi',
-            'is_active' => true,
         ]);
-        $tech1->assignRole('Technician');
+        $teknisi1->assignRole('Technician');
 
-        $tech2 = User::create([
-            'name' => 'Staff Teknisi 2',
+        $teknisi2 = User::create([
+            'name' => 'Teknisi 2',
             'email' => 'teknisi2@bbppt.go.id',
             'password' => Hash::make('password'),
             'jabatan' => 'Staff Teknisi',
-            'is_active' => true,
         ]);
-        $tech2->assignRole('Technician');
+        $teknisi2->assignRole('Technician');
 
-        // Create Requesters (Pemohon)
-        $requester1 = User::create([
+        // Requesters (Pemohon)
+        $pemohon1 = User::create([
             'name' => 'Budi Santoso',
             'email' => 'budi@bbppt.go.id',
             'password' => Hash::make('password'),
-            'jabatan' => 'Staff Administrasi',
-            'is_active' => true,
+            'jabatan' => 'Staff Umum',
         ]);
-        $requester1->assignRole('Requester');
+        $pemohon1->assignRole('Pemohon');
 
-        $requester2 = User::create([
+        $pemohon2 = User::create([
             'name' => 'Siti Rahayu',
             'email' => 'siti@bbppt.go.id',
             'password' => Hash::make('password'),
             'jabatan' => 'Staff Keuangan',
-            'is_active' => true,
         ]);
-        $requester2->assignRole('Requester');
+        $pemohon2->assignRole('Pemohon');
 
         $this->command->info('Users created successfully!');
-        $this->command->info('');
+        $this->command->newLine();
         $this->command->info('Login credentials (password: password):');
         $this->command->info('- Manager TI: manager@bbppt.go.id');
         $this->command->info('- Team Lead: teamlead@bbppt.go.id');

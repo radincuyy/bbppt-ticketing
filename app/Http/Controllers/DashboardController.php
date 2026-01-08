@@ -2,125 +2,160 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
+use App\Models\Tiket;
 use App\Models\User;
-use App\Models\Category;
+use App\Models\Kategori;
 use App\Models\Status;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     /**
-     * Display dashboard based on user role
+     * Menampilkan dashboard berdasarkan role user.
      */
     public function index()
     {
         $user = Auth::user();
         
-        // Common statistics
+        // Statistik umum
         $stats = $this->getStatistics($user);
         
-        // Recent tickets based on role
+        // Tiket terbaru berdasarkan role
         $recentTickets = $this->getRecentTickets($user);
         
-        // Get tickets needing attention
+        // Tiket yang perlu perhatian khusus
         $attentionTickets = $this->getAttentionTickets($user);
         
-        return view('dashboard', compact('stats', 'recentTickets', 'attentionTickets'));
+        // Data kinerja teknisi
+        $kinerjaTeknisi = collect();
+        if ($user->hasAnyRole(['TeamLead', 'ManagerTI'])) {
+            $kinerjaTeknisi = $this->getKinerjaTeknisi();
+        }
+        
+        return view('dashboard', compact('stats', 'recentTickets', 'attentionTickets', 'kinerjaTeknisi'));
     }
 
     /**
-     * Get statistics based on user role
+     * Mendapatkan statistik berdasarkan role user.
      */
     private function getStatistics(User $user): array
     {
         $stats = [];
 
         if ($user->hasAnyRole(['Helpdesk', 'TeamLead', 'ManagerTI'])) {
-            // Staff sees all tickets
-            $stats['total'] = Ticket::count();
-            $stats['open'] = Ticket::open()->count();
-            $stats['unassigned'] = Ticket::unassigned()->open()->count();
-            $stats['resolved_today'] = Ticket::whereDate('resolved_at', today())->count();
+            // Staff melihat semua tiket
+            $stats['total'] = Tiket::count();
+            $stats['open'] = Tiket::whereHas('status', fn($q) => $q->where('nama_status', '!=', 'Closed'))->count();
+            $stats['unassigned'] = Tiket::whereNull('id_teknisi')
+                ->whereHas('status', fn($q) => $q->where('nama_status', '!=', 'Closed'))
+                ->count();
             
-            // Count pending approval tickets
-            $stats['pending_approval'] = Ticket::whereHas('status', fn($q) => $q->where('slug', 'pending-approval'))->count();
+            // Hitung tiket menunggu persetujuan
+            $stats['pending_approval'] = Tiket::whereHas('status', fn($q) => $q->where('nama_status', 'Menunggu Persetujuan'))->count();
             
-            // By status breakdown
-            $stats['by_status'] = Status::withCount('tickets')->ordered()->get();
+            // Breakdown status
+            $stats['by_status'] = Status::withCount('tiket')->get();
             
-            // By category breakdown
-            $stats['by_category'] = Category::withCount('tickets')->get();
+            // Breakdown kategori
+            $stats['by_category'] = Kategori::withCount('tiket')->get();
+            
+            // Tiket Selesai (Selesai + Closed)
+            $stats['completed'] = Tiket::whereHas('status', fn($q) => $q->where('nama_status', 'Selesai'))->count();
+            $stats['closed'] = Tiket::whereHas('status', fn($q) => $q->where('nama_status', 'Closed'))->count();
             
         } elseif ($user->hasRole('Technician')) {
-            // Technician sees assigned tickets
-            $stats['total'] = Ticket::forTechnician($user->id)->count();
-            $stats['open'] = Ticket::forTechnician($user->id)->open()->count();
-            $stats['resolved_today'] = Ticket::forTechnician($user->id)->whereDate('resolved_at', today())->count();
+            // Teknisi melihat tiket yang ditugaskan
+            $stats['total'] = Tiket::byTeknisi($user->id)->count();
+            $stats['open'] = Tiket::byTeknisi($user->id)
+                ->whereHas('status', fn($q) => $q->where('nama_status', '!=', 'Closed'))
+                ->count();
             
         } else {
-            // Requester sees own tickets
-            $stats['total'] = Ticket::byRequester($user->id)->count();
-            $stats['open'] = Ticket::byRequester($user->id)->open()->count();
-            $stats['in_progress'] = Ticket::byRequester($user->id)
-                ->whereHas('status', fn($q) => $q->where('slug', 'in-progress'))
+            // Pemohon melihat tiket mereka sendiri
+            $stats['total'] = Tiket::byPengguna($user->id)->count();
+            $stats['open'] = Tiket::byPengguna($user->id)
+                ->whereHas('status', fn($q) => $q->whereNotIn('nama_status', ['Closed', 'Selesai']))
                 ->count();
-            $stats['closed'] = Ticket::byRequester($user->id)->closed()->count();
+            $stats['completed'] = Tiket::byPengguna($user->id)
+                ->whereHas('status', fn($q) => $q->whereIn('nama_status', ['Closed', 'Selesai']))
+                ->count();
         }
 
-        // Pending approvals for Manager
+        // Persetujuan tertunda untuk Manager
         if ($user->hasRole('ManagerTI')) {
-            $stats['pending_approvals'] = Ticket::pendingApproval()->count();
+            $stats['pending_approvals'] = Tiket::whereHas('status', fn($q) => $q->where('nama_status', 'Menunggu Persetujuan'))->count();
         }
 
         return $stats;
     }
 
     /**
-     * Get recent tickets based on user role
+     * Mendapatkan tiket terbaru berdasarkan role user.
      */
     private function getRecentTickets(User $user)
     {
-        $query = Ticket::with(['category', 'priority', 'status', 'requester', 'assignedTo']);
+        $query = Tiket::with(['kategori', 'prioritas', 'status', 'pengguna', 'teknisi']);
 
         if ($user->hasAnyRole(['Helpdesk', 'TeamLead', 'ManagerTI'])) {
-            // Staff sees all tickets
-            return $query->latest()->take(10)->get();
+            return $query->orderBy('tanggal_dibuat', 'desc')->take(10)->get();
         } elseif ($user->hasRole('Technician')) {
-            // Technician sees assigned tickets
-            return $query->forTechnician($user->id)->latest()->take(10)->get();
+            return $query->byTeknisi($user->id)->orderBy('tanggal_dibuat', 'desc')->take(10)->get();
         } else {
-            // Requester sees own tickets
-            return $query->byRequester($user->id)->latest()->take(10)->get();
+            return $query->byPengguna($user->id)->orderBy('tanggal_dibuat', 'desc')->take(10)->get();
         }
     }
 
     /**
-     * Get tickets needing attention
+     * Mendapatkan tiket yang butuh perhatian (Prioritas Tinggi, Belum Ditugaskan, dll).
      */
     private function getAttentionTickets(User $user)
     {
-        $query = Ticket::with(['category', 'priority', 'status', 'requester']);
+        $query = Tiket::with(['kategori', 'prioritas', 'status', 'pengguna']);
 
         if ($user->hasAnyRole(['Helpdesk', 'TeamLead', 'ManagerTI'])) {
-            // Unassigned high priority tickets that are still open
+            // Tiket belum ditugaskan yang masih terbuka
             return $query->unassigned()
-                ->open()
-                ->whereHas('priority', fn($q) => $q->where('level', '>=', 3))
-                ->latest()
+                ->whereHas('status', fn($q) => $q->where('nama_status', '!=', 'Closed'))
+                ->whereHas('prioritas', fn($q) => $q->where('nama_prioritas', 'Tinggi'))
+                ->orderBy('tanggal_dibuat', 'desc')
                 ->take(5)
                 ->get();
         } elseif ($user->hasRole('Technician')) {
-            // Assigned high priority tickets
-            return $query->forTechnician($user->id)
-                ->open()
-                ->whereHas('priority', fn($q) => $q->where('level', '>=', 3))
-                ->latest()
+            return $query->byTeknisi($user->id)
+                ->whereHas('status', fn($q) => $q->where('nama_status', '!=', 'Closed'))
+                ->whereHas('prioritas', fn($q) => $q->where('nama_prioritas', 'Tinggi'))
+                ->orderBy('tanggal_dibuat', 'desc')
                 ->take(5)
                 ->get();
         }
 
         return collect();
+    }
+
+    /**
+     * Mendapatkan data kinerja staff Layanan TI
+     */
+    private function getKinerjaTeknisi()
+    {
+        $staffTI = User::role(['Helpdesk', 'Technician'])->get();
+        
+        return $staffTI->map(function ($staff) {
+            $totalDitugaskan = Tiket::where('id_teknisi', $staff->id)->count();
+            $sedangDikerjakan = Tiket::where('id_teknisi', $staff->id)
+                ->whereHas('status', fn($q) => $q->whereNotIn('nama_status', ['Closed', 'Selesai']))
+                ->count();
+            $selesai = Tiket::where('id_teknisi', $staff->id)
+                ->whereHas('status', fn($q) => $q->whereIn('nama_status', ['Closed', 'Selesai']))
+                ->count();
+            
+            return [
+                'nama' => $staff->name,
+                'role' => $staff->getRoleNames()->first(),
+                'total' => $totalDitugaskan,
+                'dikerjakan' => $sedangDikerjakan,
+                'selesai' => $selesai,
+                'persentase' => $totalDitugaskan > 0 ? round(($selesai / $totalDitugaskan) * 100) : 0,
+            ];
+        });
     }
 }

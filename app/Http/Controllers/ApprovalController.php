@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
-use App\Models\User;
+use App\Models\Tiket;
+use App\Services\TiketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ApprovalController extends Controller
 {
+    protected $tiketService;
+
+    public function __construct(TiketService $tiketService)
+    {
+        $this->tiketService = $tiketService;
+    }
+
     /**
-     * Show pending approvals
+     * Menampilkan daftar tiket yang menunggu persetujuan.
      */
     public function index()
     {
@@ -20,62 +27,54 @@ class ApprovalController extends Controller
             abort(403);
         }
 
-        // Get tickets with status "Menunggu Persetujuan"
-        $pendingTickets = Ticket::with(['category', 'priority', 'status', 'requester'])
-            ->whereHas('status', fn($q) => $q->where('slug', 'pending-approval'))
-            ->latest()
+        // Ambil tiket dengan status "Menunggu Persetujuan"
+        // Query ini spesifik read-only untuk view, jadi tidak harus masuk service, 
+        // tapi logikanya tetap dijaga bersih.
+        $pendingTickets = Tiket::with(['kategori', 'prioritas', 'status', 'pengguna'])
+            ->whereHas('status', fn($q) => $q->where('nama_status', 'Menunggu Persetujuan'))
+            ->orderBy('tanggal_dibuat', 'desc')
             ->paginate(15);
-        
-        // Count approved and rejected this month
-        $approvedCount = Ticket::where('approval_status', 'approved')
-            ->whereMonth('approved_at', now()->month)
-            ->count();
-        $rejectedCount = Ticket::where('approval_status', 'rejected')
-            ->whereMonth('approved_at', now()->month)
-            ->count();
 
-        return view('approvals.index', compact('pendingTickets', 'approvedCount', 'rejectedCount'));
+        return view('approvals.index', compact('pendingTickets'));
     }
 
     /**
-     * Approve a ticket
+     * Menyetujui tiket.
      */
-    public function approve(Request $request, Ticket $ticket)
+    public function approve(Request $request, $id)
     {
         $user = Auth::user();
+        $tiket = Tiket::findOrFail($id);
 
         if (!$user->can('approvals.approve')) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'notes' => 'nullable|string|max:500',
-        ]);
-
-        $ticket->approve($user, $validated['notes'] ?? null);
+        $this->tiketService->approveTiket($tiket);
 
         return redirect()->route('approvals.index')
-            ->with('success', 'Tiket ' . $ticket->ticket_number . ' berhasil disetujui.');
+            ->with('success', 'Tiket ' . $tiket->nomor_tiket . ' berhasil disetujui.');
     }
 
     /**
-     * Reject a ticket
+     * Menolak tiket.
      */
-    public function reject(Request $request, Ticket $ticket)
+    public function reject(Request $request, $id)
     {
         $user = Auth::user();
+        $tiket = Tiket::findOrFail($id);
 
         if (!$user->can('approvals.reject')) {
             abort(403);
         }
 
         $validated = $request->validate([
-            'notes' => 'required|string|max:500',
+            'alasan' => 'required|string|max:500',
         ]);
 
-        $ticket->reject($user, $validated['notes']);
+        $this->tiketService->rejectTiket($tiket, $validated['alasan']);
 
         return redirect()->route('approvals.index')
-            ->with('success', 'Tiket ' . $ticket->ticket_number . ' ditolak.');
+            ->with('success', 'Tiket ' . $tiket->nomor_tiket . ' ditolak.');
     }
 }

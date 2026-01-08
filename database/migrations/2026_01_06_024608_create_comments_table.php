@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('ticket_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->text('content');
-            $table->boolean('is_internal')->default(false); // Internal notes only visible to staff
-            $table->timestamps();
+        Schema::create('komentar', function (Blueprint $table) {
+            $table->id('id_komentar');
+            $table->unsignedBigInteger('id_tiket');
+            $table->unsignedBigInteger('id_pengguna');
+            $table->text('isi_komentar');
+            $table->timestamp('tanggal_kirim')->useCurrent();
+            
+            // Foreign Keys
+            $table->foreign('id_tiket')->references('id_tiket')->on('tiket')->onDelete('cascade');
+            $table->foreign('id_pengguna')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::dropIfExists('komentar');
     }
 };

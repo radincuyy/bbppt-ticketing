@@ -1,164 +1,205 @@
-# Sistem Ticketing Pengelolaan Layanan TI - BBPPT
+# 🎫 Sistem Ticketing Pengelolaan Layanan TI
 
-Aplikasi web untuk pengelolaan tiket layanan Teknologi Informasi di Balai Besar Pengembangan Penjaminan Mutu Pendidikan Vokasi (BBPPT).
+<p align="center">
+  <strong>Balai Besar Pengujian Perangkat Telekomunikasi (BBPPT)</strong><br>
+  Sistem Pengelolaan Permintaan Layanan Teknologi Informasi
+</p>
 
-## 📋 Deskripsi
+---
 
-Sistem Ticketing ini memungkinkan:
-- Pemohon untuk mengajukan tiket layanan TI
-- Staff Helpdesk untuk mengelola dan menugaskan tiket
-- Staff Teknisi untuk menangani tiket teknis
-- Manager untuk memberikan persetujuan dan memonitor kinerja
+## Deskripsi
+
+Sistem Ticketing Pengelolaan Layanan TI adalah aplikasi web yang dirancang untuk mengelola permintaan layanan TI secara efisien dan terstruktur. Aplikasi ini mendukung alur kerja dari pengajuan tiket hingga penyelesaian, dengan fitur persetujuan, penugasan teknisi, dan pelaporan kinerja.
+
+## Fitur Utama
+
+### 👤 Pemohon Layanan
+- Membuat tiket permintaan layanan TI
+- Upload lampiran dokumen/screenshot
+- Melihat riwayat dan status tiket
+- Memberikan komentar/respon
+- Menutup tiket setelah selesai
+
+### 👨‍💼 Staff Helpdesk
+- Melihat semua tiket masuk
+- Menugaskan tiket ke staff (Helpdesk/Teknisi)
+- Mengubah kategori dan prioritas tiket
+- Update status tiket
+- Mengelola daftar tugas pribadi
+
+### 🔧 Staff Teknisi
+- Melihat tiket yang ditugaskan (Daftar Tugas)
+- Update status tiket
+- Menyelesaikan tiket
+
+### 👔 Ketua Tim (Team Lead)
+- Dashboard monitoring kinerja layanan
+- Grafik statistik tiket per status dan kategori
+- Tabel kinerja staff Helpdesk & Teknisi
+
+### 🏢 Manager Layanan TI
+- Dashboard monitoring lengkap
+- Memberikan persetujuan (approve/reject)
+- Download laporan (Excel/PDF)
+- Monitoring kinerja layanan TI
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Laravel 11
-- **Frontend**: Blade Templates + Tailwind CSS v4
-- **Database**: MySQL
-- **Icons**: Tabler Icons
-- **Auth & Roles**: Spatie Laravel Permission
-- **Activity Log**: Spatie Laravel Activitylog
+| Komponen | Teknologi |
+|----------|-----------|
+| **Backend** | Laravel 12 (PHP 8.4) |
+| **Frontend** | Blade Templates + Tailwind CSS v4 |
+| **Database** | MySQL 8.0 |
+| **Icons** | Tabler Icons |
+| **Charts** | Chart.js |
+| **Auth & Roles** | Spatie Laravel Permission |
+| **JavaScript** | Alpine.js |
 
-## 👥 Role Pengguna
+---
 
-| Role | Deskripsi |
-|------|-----------|
-| **Pemohon Layanan** | User yang mengajukan tiket |
-| **Staf Helpdesk** | Menerima dan mengelola tiket masuk |
-| **Staf Teknisi** | Menangani tiket teknis |
-| **Ketua Tim (TeamLead)** | Memantau kinerja layanan |
-| **Manager Layanan TI** | Memberikan persetujuan, memonitor, download laporan |
+## 📦 Instalasi
 
-## 📦 Fitur Utama
-
-### Pemohon Layanan
-- ✅ Membuat tiket baru
-- ✅ Upload lampiran
-- ✅ Melihat riwayat & status tiket
-- ✅ Memberikan komentar/respon
-- ✅ Menutup tiket (setelah resolved)
-
-### Staf Helpdesk
-- ✅ Melihat semua tiket masuk
-- ✅ Mengubah kategori & prioritas tiket
-- ✅ Menugaskan tiket ke staff (Helpdesk/Teknisi)
-- ✅ Update status tiket
-- ✅ Catatan internal (tidak terlihat pemohon)
-
-### Staf Teknisi
-- ✅ Melihat tiket yang ditugaskan
-- ✅ Update status tiket
-- ✅ Menyelesaikan tiket
-
-### Manager Layanan TI
-- ✅ Dashboard monitoring
-- ✅ Memberikan persetujuan (approve/reject)
-- ✅ Download laporan (Excel/PDF)
-
-## 🚀 Instalasi
-
-### Prerequisites
+### Prasyarat
 - PHP 8.2+
-- Composer
-- Node.js & NPM
-- MySQL / SQLite
+- Composer 2.x
+- Node.js 18+ & NPM
+- MySQL 8.0+
 
 ### Langkah Instalasi
 
 ```bash
-# Clone repository
+# 1. Clone repository
 git clone <repository-url>
-cd ticketing-bbppt-2
+cd bbppt-ticketing
 
-# Install PHP dependencies
+# 2. Install PHP dependencies
 composer install
 
-# Install NPM dependencies
+# 3. Install NPM dependencies
 npm install
 
-# Copy environment file
+# 4. Salin file environment
 cp .env.example .env
 
-# Generate app key
+# 5. Generate application key
 php artisan key:generate
 
-# Setup database (edit .env sesuai konfigurasi)
-php artisan migrate
+# 6. Konfigurasi database di file .env
+# DB_DATABASE=ticketing_bbppt
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-# Seed data master & user
-php artisan db:seed
+# 7. Jalankan migrasi dan seeder
+php artisan migrate --seed
 
-# Build assets
+# 8. Buat symbolic link untuk storage
+php artisan storage:link
+
+# 9. Build assets
 npm run build
 
-# Jalankan server
+# 10. Jalankan server
 php artisan serve
 ```
 
-## Default Login
+### Mode Development
+
+```bash
+# Jalankan semua service (server, vite, queue)
+composer dev
+```
+
+---
+
+## 🔐 Akun Default
 
 | Role | Email | Password |
 |------|-------|----------|
 | Manager TI | manager@bbppt.go.id | password |
 | Ketua Tim | teamlead@bbppt.go.id | password |
 | Helpdesk | helpdesk@bbppt.go.id | password |
-| Teknisi | teknisi@bbppt.go.id | password |
-| Pemohon | user@bbppt.go.id | password |
+| Teknisi 1 | teknisi1@bbppt.go.id | password |
+| Teknisi 2 | teknisi2@bbppt.go.id | password |
+| Pemohon (Budi) | budi@bbppt.go.id | password |
+| Pemohon (Siti) | siti@bbppt.go.id | password |
 
-## Struktur Folder
+---
+
+## 📁 Struktur Proyek
 
 ```
-ticketing-bbppt-2/
+bbppt-ticketing/
 ├── app/
-│   ├── Http/Controllers/     # Controller
-│   ├── Models/               # Eloquent Models
-│   └── ...
+│   ├── Http/
+│   │   ├── Controllers/          # Controller aplikasi
+│   │   │   ├── Admin/            # Controller admin
+│   │   │   ├── Auth/             # Controller autentikasi
+│   │   │   ├── TiketController   # Controller utama tiket
+│   │   │   └── ...
+│   │   └── Requests/             # Form Request (validasi)
+│   ├── Models/                   # Eloquent Models
+│   └── Services/                 # Service Layer (logika bisnis)
 ├── database/
-│   ├── migrations/           # Database migrations
-│   └── seeders/              # Database seeders
+│   ├── migrations/               # Database migrations
+│   └── seeders/                  # Database seeders
 ├── resources/
-│   ├── views/                # Blade templates
-│   └── css/                  # Stylesheets
+│   ├── css/                      # Stylesheet
+│   ├── js/                       # JavaScript
+│   └── views/                    # Blade templates
 ├── routes/
-│   └── web.php               # Web routes
+│   └── web.php                   # Web routes
 └── ...
 ```
 
-## Status Tiket
+---
 
-| Status | Deskripsi |
-|--------|-----------|
-| Open | Tiket baru dibuat |
-| In Progress | Sedang dikerjakan |
-| Menunggu Persetujuan | Butuh approval Manager |
-| Resolved | Sudah diselesaikan |
-| Closed | Tiket ditutup |
+## Arsitektur Kode
 
-## Prioritas
+Codebase mengikuti prinsip **Clean Architecture** dengan pemisahan tanggung jawab:
 
-| Prioritas | Level |
-|-----------|-------|
-| Kecil (Low) | 1 |
-| Sedang (Normal) | 2 |
-| Tinggi (High) | 3 |
+### 1. Form Requests
+Validasi input dipisahkan ke class tersendiri untuk menjaga controller tetap bersih.
 
-## Perintah Artisan
-
-```bash
-# Clear cache
-php artisan optimize:clear
-
-# Re-seed database
-php artisan migrate:fresh --seed
-
-# Run development server
-php artisan serve
+```
+app/Http/Requests/
+├── StoreTiketRequest.php
+├── UpdateTiketRequest.php
+├── StoreUserRequest.php
+└── ...
 ```
 
-## Catatan Pengembangan
+### 2. Service Layer
+Logika bisnis kompleks dipindahkan ke Service untuk reusability dan testability.
 
-- Sistem menggunakan soft delete untuk data penting
-- Audit trail menggunakan Spatie Activity Log
-- File upload disimpan di storage/app/public
+```php
+// Contoh penggunaan TiketService
+$tiketService = new TiketService();
+$tiketService->createTiket($data, $user);
+$tiketService->assignTeknisi($tiket, $teknisi);
+$tiketService->closeTiket($tiket, $user, $catatan);
+```
 
-**Dikembangkan untuk BBPPT © 2026**
+### 3. Alur Request
+```
+Request → Controller → FormRequest (validasi) → Service (logika) → Response
+```
+
+---
+
+## 📊 Status Tiket
+
+| Status | Deskripsi | Warna |
+|--------|-----------|-------|
+| Open | Tiket baru dibuat | 🔵 Biru |
+| Dalam Proses | Sedang dikerjakan | 🟡 Kuning |
+| Menunggu Persetujuan | Butuh approval Manager | 🟣 Ungu |
+| Selesai | Sudah diselesaikan teknisi | 🟢 Hijau |
+| Closed | Tiket ditutup oleh pemohon | ⚫ Abu |
+
+
+
+## Lisensi
+
+Dikembangkan untuk **Balai Besar Pengujian Perangkat Telekomunikasi (BBPPT)**.

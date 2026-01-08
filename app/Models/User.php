@@ -7,33 +7,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, LogsActivity;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var list<string>
+     * Sesuai class diagram: ID Pengguna, Nama Lengkap, Email, Jabatan, Login, Logout
      */
     protected $fillable = [
-        'name',
-        'email',
+        'name',          // Nama Lengkap
+        'email',         // Email
         'password',
-        'jabatan',
-        'phone',
-        'is_active',
-        'last_login_at',
-        'last_logout_at',
+        'jabatan',       // Jabatan
+        'login',         // Waktu Login terakhir
+        'logout',        // Waktu Logout terakhir
     ];
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
      */
     protected $hidden = [
         'password',
@@ -42,56 +35,51 @@ class User extends Authenticatable
 
     /**
      * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_active' => 'boolean',
-            'last_login_at' => 'datetime',
-            'last_logout_at' => 'datetime',
+            'login' => 'datetime',
+            'logout' => 'datetime',
         ];
     }
 
     /**
-     * Activity log options
+     * Get tiket yang dibuat oleh pengguna ini (sebagai pemohon)
      */
-    public function getActivitylogOptions(): LogOptions
+    public function tiket(): HasMany
     {
-        return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'jabatan', 'is_active'])
-            ->logOnlyDirty();
+        return $this->hasMany(Tiket::class, 'id_pengguna', 'id');
     }
 
     /**
-     * Get tickets created by this user (as requester)
+     * Get tiket yang ditugaskan ke pengguna ini (sebagai teknisi)
      */
-    public function tickets(): HasMany
+    public function tiketDitugaskan(): HasMany
     {
-        return $this->hasMany(Ticket::class, 'requester_id');
+        return $this->hasMany(Tiket::class, 'id_teknisi', 'id');
     }
 
     /**
-     * Get tickets assigned to this user (as technician)
+     * Get komentar oleh pengguna ini
      */
-    public function assignedTickets(): HasMany
+    public function komentar(): HasMany
     {
-        return $this->hasMany(Ticket::class, 'assigned_to_id');
+        return $this->hasMany(Komentar::class, 'id_pengguna', 'id');
     }
 
     /**
-     * Get comments by this user
+     * Get audit trail oleh pengguna ini
      */
-    public function comments(): HasMany
+    public function auditTrail(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(AuditTrail::class, 'id_pengguna', 'id');
     }
 
     /**
-     * Check if user is a staff member (not requester)
+     * Check apakah pengguna adalah staff (bukan pemohon biasa)
      */
     public function isStaff(): bool
     {
@@ -99,7 +87,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user can manage tickets
+     * Check apakah pengguna bisa mengelola tiket
      */
     public function canManageTickets(): bool
     {
@@ -107,10 +95,26 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user can approve tickets
+     * Check apakah pengguna bisa approve tiket
      */
     public function canApproveTickets(): bool
     {
         return $this->hasRole('ManagerTI');
+    }
+
+    /**
+     * Catat waktu login
+     */
+    public function catatLogin(): void
+    {
+        $this->update(['login' => now()]);
+    }
+
+    /**
+     * Catat waktu logout
+     */
+    public function catatLogout(): void
+    {
+        $this->update(['logout' => now()]);
     }
 }

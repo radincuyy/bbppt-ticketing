@@ -3,63 +3,93 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar semua pengguna.
      */
     public function index()
     {
-        //
+        $users = User::with('roles')->get();
+        $roles = Role::all();
+        return view('admin.users.index', compact('users', 'roles'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan form untuk menambah pengguna baru.
      */
     public function create()
     {
-        //
+        $roles = Role::all();
+        return view('admin.users.create', compact('roles'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menampilkan form untuk mengedit pengguna.
      */
-    public function store(Request $request)
+    public function edit($id)
     {
-        //
+        $user = User::with('roles')->findOrFail($id);
+        $roles = Role::all();
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
     /**
-     * Display the specified resource.
+     * Menyimpan pengguna baru ke database.
      */
-    public function show(string $id)
+    public function store(StoreUserRequest $request)
     {
-        //
+        $validated = $request->validated();
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'jabatan' => $validated['jabatan'],
+        ]);
+
+        $user->assignRole($validated['role']);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User berhasil ditambahkan.');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Memperbarui data pengguna.
      */
-    public function edit(string $id)
+    public function update(UpdateUserRequest $request, $id)
     {
-        //
+        $user = User::findOrFail($id);
+        
+        $validated = $request->validated();
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'jabatan' => $validated['jabatan'],
+        ]);
+
+        $user->syncRoles([$validated['role']]);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User berhasil diperbarui.');
     }
 
     /**
-     * Update the specified resource in storage.
+     * Menghapus pengguna dari sistem.
      */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
+        $user = User::findOrFail($id);
+        $user->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User berhasil dihapus.');
     }
 }

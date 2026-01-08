@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('priorities', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->string('color')->default('#6b7280'); // gray-500
-            $table->integer('level')->default(0); // Higher = more urgent
+        Schema::create('prioritas', function (Blueprint $table) {
+            $table->id('id_prioritas');
+            $table->string('nama_prioritas');
+            $table->string('color')->default('#6B7280');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('priorities');
+        Schema::dropIfExists('prioritas');
     }
 };

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -28,20 +27,11 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        // Check if user exists and is active
-        $user = User::where('email', $request->email)->first();
-        
-        if ($user && !$user->is_active) {
-            throw ValidationException::withMessages([
-                'email' => ['Akun Anda tidak aktif. Silakan hubungi administrator.'],
-            ]);
-        }
-
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             
-            // Update last login time
-            Auth::user()->update(['last_login_at' => now()]);
+            // Catat waktu login
+            Auth::user()->catatLogin();
 
             return redirect()->intended(route('dashboard'));
         }
@@ -56,9 +46,9 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        // Update last logout time
+        // Catat waktu logout
         if (Auth::check()) {
-            Auth::user()->update(['last_logout_at' => now()]);
+            Auth::user()->catatLogout();
         }
 
         Auth::logout();

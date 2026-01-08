@@ -11,16 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lampiran', function (Blueprint $table) {
-            $table->id('id_lampiran');
-            $table->unsignedBigInteger('id_tiket');
-            $table->string('nama_file');
-            $table->string('path_file');
-            $table->string('tipe_file');
-            $table->timestamps();
+        Schema::create('audit_trail', function (Blueprint $table) {
+            $table->id('id_log');
+            $table->unsignedBigInteger('id_tiket')->nullable();
+            $table->unsignedBigInteger('id_pengguna')->nullable();
+            $table->string('aktivitas');
+            $table->timestamp('timestamp')->useCurrent();
             
-            // Foreign Key
             $table->foreign('id_tiket')->references('id_tiket')->on('tiket')->onDelete('cascade');
+            $table->foreign('id_pengguna')->references('id')->on('users')->onDelete('set null');
         });
     }
 
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lampiran');
+        Schema::dropIfExists('audit_trail');
     }
 };

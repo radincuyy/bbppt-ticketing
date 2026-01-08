@@ -112,7 +112,7 @@
     </style>
 </head>
 <body>
-    <button class="print-btn" onclick="window.print()">🖨️ Cetak / Save as PDF</button>
+    <button class="print-btn" onclick="window.print()">Cetak / Save as PDF</button>
 
     <div class="container">
         <div class="header">
@@ -184,15 +184,15 @@
                 <th>Pemohon</th>
                 <th>Tanggal</th>
             </tr>
-            @foreach($tickets as $index => $ticket)
+            @foreach($tikets as $index => $tiket)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $ticket->ticket_number }}</td>
-                <td>{{ Str::limit($ticket->title, 30) }}</td>
-                <td>{{ $ticket->category->name ?? '-' }}</td>
-                <td>{{ $ticket->status->name ?? '-' }}</td>
-                <td>{{ $ticket->requester->name ?? '-' }}</td>
-                <td>{{ $ticket->created_at->format('d/m/Y') }}</td>
+                <td>{{ $tiket->nomor_tiket }}</td>
+                <td>{{ Str::limit($tiket->judul, 30) }}</td>
+                <td>{{ $tiket->kategori->nama_kategori ?? '-' }}</td>
+                <td>{{ $tiket->status->nama_status ?? '-' }}</td>
+                <td>{{ $tiket->pengguna->name ?? '-' }}</td>
+                <td>{{ $tiket->tanggal_dibuat->format('d/m/Y') }}</td>
             </tr>
             @endforeach
         </table>

@@ -58,9 +58,9 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Create roles and assign permissions
-        // 1. Requester (Pemohon)
-        $requester = Role::create(['name' => 'Requester']);
-        $requester->givePermissionTo([
+        // 1. Pemohon Layanan
+        $pemohon = Role::create(['name' => 'Pemohon']);
+        $pemohon->givePermissionTo([
             'tickets.view.own',
             'tickets.create',
             'tickets.update.own',
@@ -93,6 +93,7 @@ class RolePermissionSeeder extends Seeder
         $technician->givePermissionTo([
             'tickets.view.assigned',
             'tickets.update.assigned',
+            'tickets.close.all', 
             'comments.create',
             'comments.create.internal',
             'comments.view.internal',
